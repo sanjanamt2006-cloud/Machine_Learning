@@ -8,12 +8,15 @@ import random
 # ----------------------------
 # CONFIG
 # ----------------------------
-st.set_page_config(page_title="Machine Learning Dashboard", layout="wide")
+st.set_page_config(
+    page_title="Machine Learning Dashboard",
+    layout="wide"
+)
 
 st.title("🤖 Andrew Ng Machine Learning Dashboard")
 
 # ----------------------------
-# LOAD DATA
+# LOAD DATA (SAFE VERSION)
 # ----------------------------
 @st.cache_data
 def load_data():
@@ -33,10 +36,10 @@ def load_data():
 ex1, ex2, X, y, theta1, theta2 = load_data()
 
 # ----------------------------
-# SIDEBAR MENU
+# SIDEBAR
 # ----------------------------
 menu = st.sidebar.radio(
-    "Select Section",
+    "Select Page",
     ["Overview", "Linear Regression", "Logistic Regression", "Digit Recognition", "Neural Network"]
 )
 
@@ -49,14 +52,14 @@ if menu == "Overview":
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Linear Regression Rows", ex1.shape[0])
-    col2.metric("Logistic Regression Rows", ex2.shape[0])
+    col1.metric("Linear Regression", ex1.shape[0])
+    col2.metric("Logistic Regression", ex2.shape[0])
     col3.metric("Digit Samples", X.shape[0])
 
-    st.write("### ex1 data")
+    st.write("### ex1")
     st.dataframe(ex1.head())
 
-    st.write("### ex2 data")
+    st.write("### ex2")
     st.dataframe(ex2.head())
 
 # ----------------------------
@@ -69,12 +72,16 @@ elif menu == "Linear Regression":
     fig = px.scatter(ex1, x="population", y="profit", trendline="ols")
     st.plotly_chart(fig, use_container_width=True)
 
+    st.subheader("Profit Distribution")
+
+    st.bar_chart(ex1["profit"])
+
 # ----------------------------
 # LOGISTIC REGRESSION
 # ----------------------------
 elif menu == "Logistic Regression":
 
-    st.subheader("Admission based on scores")
+    st.subheader("Admission Prediction")
 
     fig = px.scatter(
         ex2,
@@ -85,6 +92,10 @@ elif menu == "Logistic Regression":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    st.subheader("Admission Count")
+
+    st.bar_chart(ex2["admission"].value_counts().sort_index())
+
 # ----------------------------
 # DIGIT RECOGNITION
 # ----------------------------
@@ -94,20 +105,25 @@ elif menu == "Digit Recognition":
 
     if st.button("Show Digit"):
 
-        idx = random.randint(0, len(X)-1)
+        idx = random.randint(0, len(X) - 1)
 
         img = X.iloc[idx].values.reshape(20, 20)
 
-        st.image(img, caption=f"Label: {y.iloc[idx,0]}", width=200)
+        st.image(img, caption=f"Label: {y.iloc[idx, 0]}", width=200)
 
     st.subheader("Digit Distribution")
 
-    st.bar_chart(y.value_counts())
+    # FIXED VERSION (no KeyError)
+    digit_counts = y.iloc[:, 0].value_counts().sort_index()
+
+    st.bar_chart(digit_counts)
 
     st.subheader("PCA Visualization")
 
-    sample = X.sample(1000)
+    sample = X.sample(1000, random_state=42)
+
     pca = PCA(n_components=2)
+
     result = pca.fit_transform(sample)
 
     df = pd.DataFrame(result, columns=["PC1", "PC2"])
@@ -119,10 +135,12 @@ elif menu == "Digit Recognition":
 # ----------------------------
 elif menu == "Neural Network":
 
-    st.subheader("Theta Visualizations")
+    st.subheader("Theta Shapes")
 
-    st.write("Theta1 shape:", theta1.shape)
-    st.write("Theta2 shape:", theta2.shape)
+    st.write("Theta1:", theta1.shape)
+    st.write("Theta2:", theta2.shape)
+
+    st.subheader("Weight Visualization")
 
     st.line_chart(theta1)
     st.line_chart(theta2)
