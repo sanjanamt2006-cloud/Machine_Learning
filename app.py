@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,9 +5,9 @@ import plotly.express as px
 from sklearn.decomposition import PCA
 import random
 
-# --------------------------------
+# -----------------------------------
 # PAGE CONFIG
-# --------------------------------
+# -----------------------------------
 
 st.set_page_config(
     page_title="Andrew Ng ML Dashboard",
@@ -16,35 +15,30 @@ st.set_page_config(
     layout="wide"
 )
 
-# --------------------------------
+# -----------------------------------
 # CUSTOM CSS
-# --------------------------------
+# -----------------------------------
 
 st.markdown("""
 <style>
-.main{
-background-color:#0E1117;
+.main {
+    padding-top: 1rem;
 }
 
-h1,h2,h3{
-color:#00CC96;
-}
-
-[data-testid="metric-container"]{
-background-color:#262730;
-padding:15px;
-border-radius:10px;
+[data-testid="metric-container"] {
+    background-color: #f0f2f6;
+    padding: 15px;
+    border-radius: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# --------------------------------
+# -----------------------------------
 # LOAD DATA
-# --------------------------------
+# -----------------------------------
 
 @st.cache_data
 def load_data():
-
     ex1 = pd.read_csv(
         "data/ex1data1.csv",
         header=None,
@@ -81,16 +75,21 @@ def load_data():
     return ex1, ex2, X, y, theta1, theta2
 
 
-ex1, ex2, X, y, theta1, theta2 = load_data()
+try:
+    ex1, ex2, X, y, theta1, theta2 = load_data()
 
-# --------------------------------
+except Exception as e:
+    st.error(f"Error loading dataset: {e}")
+    st.stop()
+
+# -----------------------------------
 # SIDEBAR
-# --------------------------------
+# -----------------------------------
 
 st.sidebar.title("🤖 Navigation")
 
 page = st.sidebar.radio(
-    "Select Page",
+    "Choose Analysis",
     [
         "Overview",
         "Linear Regression",
@@ -100,26 +99,24 @@ page = st.sidebar.radio(
     ]
 )
 
-# --------------------------------
+# -----------------------------------
 # OVERVIEW
-# --------------------------------
+# -----------------------------------
 
 if page == "Overview":
 
     st.title("🤖 Andrew Ng Machine Learning Dashboard")
 
-    c1, c2, c3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-    c1.metric("Datasets", 6)
-    c2.metric("Digit Images", X.shape[0])
-    c3.metric("Features", X.shape[1])
+    col1.metric("Datasets", "6")
+    col2.metric("Digit Samples", X.shape[0])
+    col3.metric("Features", X.shape[1])
 
     st.markdown("---")
 
-    st.subheader("Dataset Information")
-
     summary = pd.DataFrame({
-        "Dataset":[
+        "Dataset": [
             "Linear Regression",
             "Logistic Regression",
             "Digit Features",
@@ -127,7 +124,7 @@ if page == "Overview":
             "Theta1",
             "Theta2"
         ],
-        "Rows":[
+        "Rows": [
             ex1.shape[0],
             ex2.shape[0],
             X.shape[0],
@@ -135,7 +132,7 @@ if page == "Overview":
             theta1.shape[0],
             theta2.shape[0]
         ],
-        "Columns":[
+        "Columns": [
             ex1.shape[1],
             ex2.shape[1],
             X.shape[1],
@@ -145,11 +142,12 @@ if page == "Overview":
         ]
     })
 
+    st.subheader("Dataset Summary")
     st.dataframe(summary, use_container_width=True)
 
-# --------------------------------
+# -----------------------------------
 # LINEAR REGRESSION
-# --------------------------------
+# -----------------------------------
 
 elif page == "Linear Regression":
 
@@ -158,139 +156,142 @@ elif page == "Linear Regression":
     st.subheader("Dataset Preview")
     st.dataframe(ex1.head())
 
-    st.subheader("Population vs Profit")
-
     fig = px.scatter(
         ex1,
         x="Population",
         y="Profit",
-        trendline="ols"
+        title="Population vs Profit"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Profit Distribution")
-
     fig2 = px.histogram(
         ex1,
-        x="Profit"
+        x="Profit",
+        title="Profit Distribution"
     )
 
     st.plotly_chart(fig2, use_container_width=True)
 
-    st.subheader("Correlation")
-
-    corr = ex1.corr()
+    corr = ex1.corr(numeric_only=True)
 
     fig3 = px.imshow(
         corr,
-        text_auto=True
+        text_auto=True,
+        title="Correlation Heatmap"
     )
 
     st.plotly_chart(fig3, use_container_width=True)
 
-# --------------------------------
+# -----------------------------------
 # LOGISTIC REGRESSION
-# --------------------------------
+# -----------------------------------
 
 elif page == "Logistic Regression":
 
     st.title("🎯 Logistic Regression Analysis")
 
+    st.subheader("Dataset Preview")
     st.dataframe(ex2.head())
 
     fig = px.scatter(
         ex2,
         x="Exam1",
         y="Exam2",
-        color=ex2["Admitted"].astype(str)
+        color=ex2["Admitted"].astype(str),
+        title="Admission Classification"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    admission = ex2["Admitted"].value_counts()
+    admission_counts = ex2["Admitted"].value_counts()
 
     fig2 = px.pie(
-        values=admission.values,
-        names=admission.index
+        values=admission_counts.values,
+        names=admission_counts.index,
+        title="Admission Distribution"
     )
 
     st.plotly_chart(fig2, use_container_width=True)
 
-# --------------------------------
+# -----------------------------------
 # DIGIT RECOGNITION
-# --------------------------------
+# -----------------------------------
 
 elif page == "Digit Recognition":
 
-    st.title("🔢 Digit Recognition Dashboard")
+    st.title("🔢 Digit Recognition")
 
-    c1,c2,c3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-    c1.metric("Images", X.shape[0])
-    c2.metric("Features", X.shape[1])
-    c3.metric("Classes", len(y["Digit"].unique()))
+    col1.metric("Images", X.shape[0])
+    col2.metric("Features", X.shape[1])
+    col3.metric("Classes", len(y["Digit"].unique()))
 
     st.markdown("---")
 
     if st.button("Show Random Digit"):
 
-        idx = random.randint(
-            0,
-            len(X)-1
-        )
+        idx = random.randint(0, X.shape[0] - 1)
 
-        image = X.iloc[idx].values.reshape(20,20)
+        image = X.iloc[idx].values.reshape(20, 20)
 
         st.image(
             image,
-            width=250,
-            caption=f"Digit : {y.iloc[idx,0]}"
+            caption=f"Digit Label: {y.iloc[idx, 0]}",
+            width=250
         )
-
-    st.subheader("Digit Distribution")
 
     digit_counts = y["Digit"].value_counts().sort_index()
 
     fig = px.bar(
         x=digit_counts.index,
-        y=digit_counts.values
+        y=digit_counts.values,
+        labels={"x": "Digit", "y": "Count"},
+        title="Digit Distribution"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("PCA Visualization")
 
-    pca = PCA(n_components=2)
+    sample_size = min(1000, len(X))
 
-    sample = X.sample(1000)
+    sample = X.sample(sample_size, random_state=42)
+
+    pca = PCA(n_components=2)
 
     pca_result = pca.fit_transform(sample)
 
-    pca_df = pd.DataFrame({
-        "PC1":pca_result[:,0],
-        "PC2":pca_result[:,1]
-    })
+    pca_df = pd.DataFrame(
+        pca_result,
+        columns=["PC1", "PC2"]
+    )
 
     fig2 = px.scatter(
         pca_df,
         x="PC1",
-        y="PC2"
+        y="PC2",
+        title="PCA Projection"
     )
 
     st.plotly_chart(fig2, use_container_width=True)
 
-# --------------------------------
+# -----------------------------------
 # NEURAL NETWORK
-# --------------------------------
+# -----------------------------------
 
 elif page == "Neural Network":
 
     st.title("🧠 Neural Network Analysis")
 
-    st.metric("Input Layer",400)
-    st.metric("Hidden Layer",25)
-    st.metric("Output Layer",10)
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Input Layer", 400)
+    col2.metric("Hidden Layer", 25)
+    col3.metric("Output Layer", 10)
+
+    st.markdown("---")
 
     st.subheader("Theta1 Heatmap")
 
@@ -315,13 +316,10 @@ elif page == "Neural Network":
         theta2.values.flatten()
     ])
 
-    st.subheader("Weight Distribution")
-
     fig3 = px.histogram(
         weights,
-        nbins=50
+        nbins=50,
+        title="Weight Distribution"
     )
 
     st.plotly_chart(fig3, use_container_width=True)
-```
-
