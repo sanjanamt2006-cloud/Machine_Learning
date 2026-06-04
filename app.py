@@ -3,8 +3,16 @@ import pandas as pd
 
 st.set_page_config(page_title="Machine Learning Dashboard")
 
-st.title("Machine Learning Dashboard")
+st.title("Dataset Test")
 
-st.success("App is running successfully!")
+try:
+    ex1 = pd.read_csv("data/ex1data1[1].csv")
 
-st.write("Dataset files found in data folder:")
+    st.success("Dataset Loaded Successfully!")
+
+    st.write("Shape:", ex1.shape)
+
+    st.dataframe(ex1.head())
+
+except Exception as e:
+    st.error(f"Error: {e}")
